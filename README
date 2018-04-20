@@ -1,0 +1,114 @@
+Nume: Oana-Bianca Bouleanu
+Grupa: 333CA
+E-mail: oana.bouleanu@stud.acs.upb.ro
+
+Tema 2 Arhitectura Sistemelor de Calcul - Inmultire matrici
+
+
+	Tema are ca scop analiza performantelor, pe doua compilatoare diferite
+(gcc si icc), a patru metode diferite de implementare a operatiei C = A * At,
+unde A este o matrice de numere complexe si At este transpusa sa.
+
+	Cele 4 metode de implementare sunt:
+1. blas
+	- este folosita functia zsyrk din BLAS Atlas, pentru a carei
+	implementare am folosit link-ul indicat in tema si google
+
+2. neopt, o varianta neoptima, de mana
+	- varianta "raw", am folosit doua for-uri pentru a parcurge
+	matricea A si inca un for care parcurge o linie/coloana pentru
+	obtinerea, la fiecare pas, a rezultatului inmultirii elementelor de pe
+	linia i cu cele de pe coloana j, pentru a obtine elementul din matricea C
+	
+3. opt_m, o varianta imbunatatita a neopt
+	- este implementata folosind acelasi cod de la varianta neopt, doar ca, am
+	utilizat doua variabile in care se retin partea reala, respectiv partea imaginara
+	a elementului C[i][j], valoarea propriu-zisa din matrice modificandu-se abia dupa
+	incheierea inmultirilor si adunarilor efectuate pentru elementul de pe linia i,
+	coloana j
+
+4. opt_f, o varianta imbunatatita a neopt cu ajutorul flag-urilor
+	- codul este acelasi cu cel de la varianta neopt, doar ca, la compilare,
+	am folosit flag-ul O3
+ 
+GCC:
+
+	BLAS SOLVER		NEOPT SOLVER		OPT_M SOLVER		OPT_F SOLVER
+
+TEST 1
+Time: 	0.630740		10.527382		7.553612		1.526771
+
+TEST 2
+Time: 	1.059152		18.308699		13.460259		2.797023
+
+TEST 3
+Time: 	1.650643		30.003008		21.258051		4.051665
+
+TEST 4
+Time: 	2.366182		43.560261		31.439772		6.695581
+
+TEST 5
+Time: 	2.980336		61.980118		44.888226		9.200139
+
+
+	Se poate observa ca, intr-adevar, varianta neopt, fiind cea mai "raw" si
+fara vreo optimizare, ruleaza in cel mai indelungat timp. 
+	Este urmata de opt_m, de unde se observa ca doua variabile de tip register
+scurteaza timpul de rulare, nemaiaccesandu-se elementele matricei la fiecare
+iteratie a inmultirilor elementelor unei linii cu cele ale unei coloane, ci abia
+la final, cand se scrie doar rezultatul.
+	Timpii de rulare a variantei opt_f arata, in mod clar, ca un flag de
+optimizare face diferenta, fiind mult mai eficient decat mici optimizari in cod.
+	 Pe primul loc se afla varianta BLAS, de departe cea mai eficienta, chiar
+cu mult mai eficienta pe unele ultimele teste decat opt_f.
+
+ICC:
+
+	BLAS SOLVER	NEOPT SOLVER	OPT_M SOLVER	OPT_F SOLVER
+
+TEST 1
+Time: 	0.696110	11.069555	7.897011	1.831099
+
+TEST 2
+Time: 	1.154041	18.354191	13.706146	3.142836
+
+TEST 3
+Time: 	1.776228	29.318428	21.773890	4.578945
+
+TEST 4
+Time: 	2.506941	43.258636	32.504044	6.846270
+
+TEST 5
+Time: 	3.153696	62.143608	45.433048	9.717994
+
+
+	Concluziile sunt aceeasi ca in cazul compilatorului gcc, ierarhia celor
+patru variante de implementare fiind aceeasi, cu BLAS in frunte si neopt la
+coada.
+
+	Din punct de vedere al performantelor celor doua compilatoare, analizand
+timpii de executie, se poate observa ca exista o diferenta nesemnificativa in
+favoarea compilatorului gcc, in cazul unui singur test(3) al variantei neopt,
+timpul pe icc fiind mai bun, la fel, nesemnificativ si, probabil, din pura
+intamplare.
+
+	Am realizat si grafice care sa sustina afirmatiile de mai sus. Exista
+trei tipuri:
+1. grafic comparativ pentru cele 4 metode cu gcc
+	- acesta se poate obtine ruland comenzile make; make plots
+
+2. grafic comparativ pentru cele 4 metode cu icc
+	- acesta se poate obtine ruland comenzile
+		make -f Makefile.icc; make plots -f Makefile.icc
+
+3. grafic comparativ pentru cele 4 metode gcc vs. icc
+	- acesta se poate obtine ruland comenzile
+		make; make out_files; make clean
+		make -f Makefile.icc; make out_files -f Makefile.icc
+		make plot_gcc_icc; cu ";" intre ele
+
+
+
+
+
+
